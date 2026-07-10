@@ -33,8 +33,10 @@ test("server-renders the car telemetry presentation shell", async () => {
   assert.match(html, /Car Telemetry Data Engineering Pipeline/);
   assert.match(html, /End-to-End Batch \+ Real-Time Streaming Architecture/);
   assert.match(html, /Lacoste Team/);
+  assert.match(html, /Slide 1 of 16/);
   assert.match(html, /\/og\.png/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|react-loading-skeleton/i);
+  assert.doesNotMatch(html, /In Progress|Current Status|Milestones/i);
 });
 
 test("keeps the presentation data-driven and media-aware", async () => {
@@ -44,11 +46,20 @@ test("keeps the presentation data-driven and media-aware", async () => {
   ]);
 
   assert.match(deck, /const slides:\s*Slide\[\]/);
-  assert.match(deck, /SmartMedia/);
+  assert.match(deck, /const slideCount = slides\.length/);
+  assert.equal((deck.match(/id: "/g) ?? []).length, 16);
+  assert.match(deck, /ScreenshotPanel/);
+  assert.match(deck, /ScreenshotModal/);
   assert.match(deck, /mediaIsVideo/);
   assert.match(deck, /ArrowRight/);
   assert.match(deck, /ArrowLeft/);
+  assert.match(deck, /Escape/);
   assert.match(deck, /Azure IoT Hub/);
+  assert.match(deck, /Azure Stream Analytics Job/);
+  assert.match(deck, /Azure SQL Live Telemetry Storage/);
   assert.match(deck, /Duplicate ingestion/);
+  assert.match(deck, /Project Structure/);
+  assert.match(deck, /Questions & Answers/);
+  assert.doesNotMatch(deck, /In Progress|Current Status|Milestones/i);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
 });

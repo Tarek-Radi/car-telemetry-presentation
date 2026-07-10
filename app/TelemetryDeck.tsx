@@ -2,19 +2,16 @@
 
 import { CSSProperties, useEffect, useMemo, useState } from "react";
 
+type Accent = "cyan" | "green" | "blue" | "amber";
 type MediaFit = "contain" | "cover";
 
 type MediaItem = {
   file: string;
   alt: string;
   fit?: MediaFit;
-  tone?: "cyan" | "green" | "blue" | "amber";
-};
-
-type Stat = {
-  label: string;
-  value: string;
-  detail?: string;
+  tone?: Accent;
+  caption?: string;
+  expandable?: boolean;
 };
 
 type Slide = {
@@ -23,30 +20,31 @@ type Slide = {
   title: string;
   subtitle?: string;
   layout:
-    | "hero"
+    | "cover"
     | "overview"
-    | "problem"
     | "architecture"
-    | "tech"
-    | "pipeline"
-    | "telemetry"
-    | "layers"
-    | "fix"
-    | "milestones"
+    | "batch"
+    | "screenshotSplit"
+    | "dbt"
+    | "streaming"
+    | "sqlQuery"
+    | "challenge"
+    | "structure"
+    | "results"
     | "qa";
+  accent: Accent;
   bullets?: string[];
-  media?: MediaItem[];
   flow?: string[];
-  stats?: Stat[];
-  accent?: "cyan" | "green" | "blue" | "amber";
+  secondaryFlow?: string[];
+  media?: MediaItem[];
 };
 
 const pic = (file: string) => `/pic/${file}`;
 
 const batchFlow = [
   "Vehicle Simulator",
-  "JSONL File",
-  "Airflow",
+  "JSONL",
+  "Apache Airflow",
   "PostgreSQL Bronze",
   "dbt Silver",
   "dbt Gold",
@@ -55,322 +53,441 @@ const batchFlow = [
 const streamingFlow = [
   "Vehicle Simulator",
   "Azure IoT Hub",
-  "Stream Analytics",
+  "Azure Stream Analytics",
   "Azure SQL Database",
   "Power BI",
 ];
 
-const telemetryFields = [
-  "Speed",
-  "RPM",
-  "Throttle",
-  "Engine Temp",
-  "Oil Temp",
-  "Oil Pressure",
-  "Battery Voltage",
-  "Fuel Level",
-  "Brake Pressure",
-  "Gear",
-  "Drive State",
-  "Tyre Pressure FL",
-  "Tyre Pressure FR",
-  "Tyre Pressure RL",
-  "Tyre Pressure RR",
-  "Tyre Temp FL",
-  "Tyre Temp FR",
-  "Tyre Temp RL",
-  "Tyre Temp RR",
-  "Fault Status",
-  "Fault Type",
+const dbtLayers = [
+  {
+    label: "Bronze",
+    title: "Raw ingested telemetry",
+    copy: "Source-aligned vehicle events loaded into PostgreSQL for traceability and replay.",
+  },
+  {
+    label: "Silver",
+    title: "Cleaned and validated telemetry",
+    copy: "Standardized types, quality checks, health logic, tyre analytics, and consistent event shape.",
+  },
+  {
+    label: "Gold",
+    title: "Analytics-ready models",
+    copy: "Facts, dimensions, metrics, aggregates, and Power BI-ready outputs for reporting.",
+  },
+];
+
+const folderLabels = [
+  { name: "airflow/", detail: "DAG orchestration and batch ingestion" },
+  { name: "simulator/", detail: "Vehicle telemetry event generation" },
+  { name: "dbt_project/", detail: "Bronze, Silver, and Gold models" },
+  { name: "postgres/", detail: "Warehouse schema and storage" },
+  { name: "azure/", detail: "Stream Analytics SQL and alert queries" },
+  { name: "docker-compose.yml", detail: "Reproducible local platform" },
+];
+
+const resultItems = [
+  "End-to-end batch pipeline completed",
+  "End-to-end streaming pipeline completed",
+  "Duplicate ingestion fixed",
+  "Docker file synchronization implemented",
+  "dbt Silver and Gold models completed",
+  "Azure IoT Hub ingestion validated",
+  "Stream Analytics job validated",
+  "Azure SQL live storage implemented",
+  "Individual tyre analytics implemented",
+  "Power BI-ready outputs delivered",
+];
+
+const outcomeItems = [
+  "Batch Processing",
+  "Streaming Data Engineering",
+  "Apache Airflow",
+  "dbt",
+  "PostgreSQL",
+  "Azure IoT Hub",
+  "Azure Stream Analytics",
+  "Azure SQL Database",
+  "Docker",
+  "Data Warehousing",
+  "Data Quality",
+  "SQL Optimization",
 ];
 
 const techStack = [
-  { name: "Python", type: "runtime" },
-  { name: "PostgreSQL", type: "warehouse" },
-  { name: "Apache Airflow", type: "orchestration", media: "Airflow logo.png" },
-  { name: "dbt", type: "modeling", media: "DBT Logo.png" },
-  { name: "Docker", type: "containers", media: "Docker Logo.png" },
-  { name: "Docker Compose", type: "local platform" },
-  { name: "Azure IoT Hub", type: "stream ingress", media: "Azure Logo.jfif" },
-  { name: "Azure Stream Analytics", type: "stream SQL" },
-  { name: "Azure SQL Database", type: "serving store" },
-  { name: "SQL", type: "queries" },
-  { name: "JSON", type: "event format" },
-  { name: "Power BI", type: "analytics" },
+  "Python",
+  "PostgreSQL",
+  "Apache Airflow",
+  "dbt",
+  "Docker",
+  "Docker Compose",
+  "Azure IoT Hub",
+  "Azure Stream Analytics",
+  "Azure SQL Database",
+  "Power BI",
+  "SQL",
+  "JSON",
 ];
 
 const slides: Slide[] = [
   {
-    id: "title",
-    kicker: "Lacoste Team Portfolio Demo",
+    id: "cover",
+    kicker: "Lacoste Team",
     title: "Car Telemetry Data Engineering Pipeline",
     subtitle: "End-to-End Batch + Real-Time Streaming Architecture",
-    layout: "hero",
+    layout: "cover",
     accent: "cyan",
     bullets: [
-      "Production-style telemetry pipelines for analytics-ready vehicle intelligence.",
-      "Designed to demonstrate orchestration, modeling, streaming, and cloud integration.",
+      "From simulated vehicle events to analytics-ready batch and live streaming data.",
+      "One technical story across orchestration, modeling, cloud streaming, and BI consumption.",
     ],
     media: [
       {
         file: "Architecture.png",
-        alt: "High-level architecture diagram for the car telemetry data pipeline",
+        alt: "Full architecture diagram for the telemetry platform",
         fit: "contain",
+        caption: "Batch and streaming architecture",
+        expandable: true,
       },
     ],
   },
   {
-    id: "overview",
+    id: "project-overview",
     kicker: "Project Overview",
-    title: "One simulator, two complete data paths",
+    title: "A realistic simulator feeds two production-style data paths",
     subtitle:
-      "The system turns realistic vehicle telemetry into trusted analytics data through both scheduled batch processing and live Azure streaming.",
+      "The project processes vehicle telemetry through batch warehouse modeling and real-time Azure streaming so final data is ready for Power BI.",
     layout: "overview",
     accent: "blue",
     bullets: [
-      "Vehicle simulator generates continuous telemetry events.",
-      "Batch: JSONL to Airflow to PostgreSQL to dbt.",
-      "Streaming: Azure IoT Hub to Stream Analytics to Azure SQL.",
-      "Final target: Power BI-ready data products.",
+      "A simulator generates realistic vehicle telemetry.",
+      "Batch data moves through Bronze, Silver, and Gold layers.",
+      "Streaming data is processed with Azure IoT Hub, Stream Analytics, and Azure SQL.",
+      "Both paths prepare trusted analytical outputs.",
     ],
-    stats: [
-      { value: "2", label: "Pipelines", detail: "batch and real time" },
-      { value: "21", label: "Telemetry Fields", detail: "vehicle health and behavior" },
-      { value: "3", label: "Data Layers", detail: "bronze, silver, gold" },
-    ],
+    flow: ["JSONL", "Airflow", "PostgreSQL", "dbt"],
+    secondaryFlow: ["Azure IoT Hub", "Stream Analytics", "Azure SQL Database"],
   },
   {
-    id: "problem",
-    kicker: "Business / Engineering Problem",
-    title: "Raw telemetry is noisy, continuous, and hard to trust",
-    subtitle:
-      "A production-like pipeline needs reliable ingestion, transformation, quality checks, and monitoring paths that can keep up with live vehicle events.",
-    layout: "problem",
-    accent: "amber",
-    bullets: [
-      "Raw signals arrive continuously and can contain operational noise.",
-      "Data teams need repeatable ingestion and validation before analysis.",
-      "Live monitoring requires low-latency transformation and serving storage.",
-      "The goal is a realistic Data Engineering pipeline, not a one-off script.",
-    ],
-  },
-  {
-    id: "architecture",
+    id: "high-level-architecture",
     kicker: "High-Level Architecture",
-    title: "Batch and streaming converge into analytics-ready outputs",
+    title: "The full system flow, from simulator to Power BI",
     subtitle:
-      "The architecture separates scheduled historical processing from live event processing, while preserving a shared analytics goal.",
+      "Batch processing and real-time streaming stay separate operationally, then converge around analytics-ready telemetry outputs.",
     layout: "architecture",
     accent: "cyan",
     media: [
       {
         file: "Architecture.png",
-        alt: "Batch and streaming architecture flow",
+        alt: "High-level batch and streaming architecture diagram",
         fit: "contain",
+        caption: "Click to expand the full architecture",
+        expandable: true,
       },
     ],
   },
   {
-    id: "technologies",
-    kicker: "Technologies Used",
-    title: "A modern engineering stack across orchestration, modeling, containers, cloud, and BI",
-    layout: "tech",
-    accent: "green",
-    media: [
-      { file: "Project Structure.png", alt: "Project folder structure screenshot", fit: "contain" },
-    ],
-  },
-  {
-    id: "batch",
-    kicker: "Batch ETL Pipeline",
-    title: "Airflow orchestrates raw JSONL ingestion into modeled warehouse layers",
+    id: "batch-overview",
+    kicker: "Batch Pipeline Overview",
+    title: "Batch ETL Pipeline",
     subtitle:
-      "PostgreSQL stores raw Bronze data, while dbt builds cleaned Silver models and Gold analytics tables.",
-    layout: "pipeline",
+      "The batch path turns simulator files into modeled warehouse tables through a controlled Bronze, Silver, and Gold workflow.",
+    layout: "batch",
     accent: "green",
     flow: batchFlow,
     bullets: [
-      "Airflow schedules and monitors ingestion tasks.",
-      "PostgreSQL keeps raw telemetry in a Bronze table.",
-      "dbt applies cleaning, validation, and business transformations.",
-    ],
-    media: [
-      { file: "Airflow Graph.png", alt: "Airflow DAG graph screenshot", fit: "contain" },
-      { file: "DBT Logo.png", alt: "dbt logo", fit: "contain", tone: "green" },
+      "Simulator writes telemetry in batches.",
+      "Airflow orchestrates ingestion and dependencies.",
+      "PostgreSQL stores raw Bronze data.",
+      "dbt cleans, validates, and transforms data.",
+      "Gold models provide analytics-ready outputs.",
     ],
   },
   {
-    id: "streaming",
-    kicker: "Real-Time Azure Streaming Pipeline",
-    title: "Live events move from IoT Hub through Stream Analytics into Azure SQL",
+    id: "airflow-orchestration",
+    kicker: "Apache Airflow Orchestration",
+    title: "Airflow controls the reliable batch execution sequence",
     subtitle:
-      "The streaming path supports live telemetry monitoring, SQL-based event shaping, and alert-ready storage.",
-    layout: "pipeline",
+      "The DAG makes ingestion observable, repeatable, and safe by coordinating task dependencies and Bronze load control.",
+    layout: "screenshotSplit",
+    accent: "green",
+    bullets: [
+      "DAG scheduling for batch ingestion.",
+      "Clear task dependencies and execution order.",
+      "Bronze load control after database commit.",
+      "Stream file truncation only after successful insert.",
+    ],
+    media: [
+      {
+        file: "Airflow Graph.png",
+        alt: "Airflow DAG graph showing orchestration tasks",
+        fit: "contain",
+        caption: "Airflow DAG graph",
+        expandable: true,
+      },
+    ],
+  },
+  {
+    id: "dbt-layers",
+    kicker: "dbt Transformation Layers",
+    title: "Bronze, Silver, and Gold make telemetry analytics-ready",
+    subtitle:
+      "dbt separates raw ingestion from validated event modeling and business-ready metrics.",
+    layout: "dbt",
+    accent: "green",
+    bullets: [
+      "Data quality tests and validation logic.",
+      "Vehicle health and fault classification.",
+      "Individual tyre pressure and temperature analytics.",
+      "Power BI-ready facts, dimensions, and aggregates.",
+    ],
+    media: [{ file: "DBT Logo.png", alt: "dbt logo", fit: "contain", tone: "green" }],
+  },
+  {
+    id: "dockerized-development",
+    kicker: "Dockerized Development",
+    title: "A reproducible local platform for orchestration and warehousing",
+    subtitle:
+      "Docker Compose coordinates the local services, shared volumes, and file synchronization needed for the pipeline.",
+    layout: "screenshotSplit",
+    accent: "blue",
+    bullets: [
+      "Multiple containers for Airflow services and PostgreSQL.",
+      "Shared volumes connect simulator output to ingestion tasks.",
+      "Permission handling keeps file truncation reliable.",
+      "Local setup is repeatable for demos and development.",
+    ],
+    media: [
+      {
+        file: "Docker.png",
+        alt: "Docker Desktop containers for the telemetry project",
+        fit: "contain",
+        caption: "Dockerized local environment",
+        expandable: true,
+      },
+    ],
+  },
+  {
+    id: "streaming-overview",
+    kicker: "Streaming Pipeline Overview",
+    title: "Real-Time Azure Streaming Pipeline",
+    subtitle:
+      "The streaming path receives live simulator events, processes them with SQL, stores structured outputs, and prepares them for Power BI DirectQuery.",
+    layout: "streaming",
     accent: "blue",
     flow: streamingFlow,
     bullets: [
-      "IoT Hub receives live simulator messages.",
-      "Stream Analytics transforms events with SQL.",
-      "Azure SQL stores live telemetry and alert outputs.",
+      "Low-latency telemetry ingestion.",
+      "SQL-based stream transformation.",
+      "Live telemetry and alert-ready storage.",
+      "Power BI DirectQuery readiness.",
+    ],
+  },
+  {
+    id: "azure-iot-hub",
+    kicker: "Azure IoT Hub",
+    title: "IoT Hub is the live ingestion entry point",
+    subtitle:
+      "The service receives continuous vehicle events from the simulator and confirms active streaming message flow.",
+    layout: "screenshotSplit",
+    accent: "blue",
+    bullets: [
+      "Receives live telemetry messages.",
+      "Handles continuous vehicle events.",
+      "Confirms device connectivity and message flow.",
+      "Starts the real-time Azure pipeline.",
     ],
     media: [
-      { file: "Azure IotHub Overview.jpeg", alt: "Azure IoT Hub overview screenshot", fit: "cover" },
-      { file: "Azure job Diagram.jpeg", alt: "Azure Stream Analytics job diagram", fit: "cover" },
-      { file: "Azure Query editor.jpeg", alt: "Azure Stream Analytics query editor", fit: "cover" },
+      {
+        file: "Azure IotHub Overview.jpeg",
+        alt: "Azure IoT Hub overview showing live ingestion metrics",
+        fit: "contain",
+        caption: "Azure IoT Hub overview",
+        expandable: true,
+      },
     ],
   },
   {
-    id: "telemetry",
-    kicker: "Telemetry Data",
-    title: "Rich vehicle signals for behavior, health, tyre, and fault analytics",
+    id: "stream-analytics-job",
+    kicker: "Azure Stream Analytics Job",
+    title: "The streaming job connects IoT input to Azure SQL output",
     subtitle:
-      "The simulator produces a broad event shape that can power dashboards, anomaly checks, and diagnostic reporting.",
-    layout: "telemetry",
+      "Stream Analytics validates the runtime path and keeps live event transformation observable.",
+    layout: "screenshotSplit",
     accent: "cyan",
-  },
-  {
-    id: "modeling",
-    kicker: "Data Modeling & Analytics Layers",
-    title: "Bronze, Silver, and Gold layers make telemetry usable for analysis",
-    subtitle:
-      "The data model separates raw ingestion from cleaned telemetry and curated analytics outputs.",
-    layout: "layers",
-    accent: "green",
     bullets: [
-      "Individual tyre pressure and temperature analytics.",
-      "Vehicle health classification and fault grouping.",
-      "Reusable vehicle metrics, aggregates, and Power BI-ready tables.",
+      "Input from Azure IoT Hub.",
+      "SQL-based event processing.",
+      "Output to Azure SQL Database.",
+      "Live job monitoring and runtime validation.",
+      "No deserialization or conversion errors.",
+    ],
+    media: [
+      {
+        file: "Azure job Diagram.jpeg",
+        alt: "Azure Stream Analytics job diagram",
+        fit: "contain",
+        caption: "Stream Analytics job topology",
+        expandable: true,
+      },
     ],
   },
   {
-    id: "duplicate-fix",
-    kicker: "Key Engineering Fix",
-    title: "Duplicate ingestion was solved by synchronizing file truncation with database commits",
+    id: "stream-query",
+    kicker: "Stream Analytics SQL Query",
+    title: "SQL transforms live telemetry into alert-ready records",
     subtitle:
-      "A Docker volume permission issue prevented JSONL truncation, causing Airflow to reload records that were already inserted into PostgreSQL.",
-    layout: "fix",
+      "The query filters faults, classifies subsystem health, calculates severity, and prepares downstream alert records.",
+    layout: "sqlQuery",
+    accent: "cyan",
+    bullets: [
+      "Filters active faults.",
+      "Classifies subsystem health.",
+      "Calculates alert severity.",
+      "Summarizes tyre health.",
+      "Prepares analytics-ready alert records.",
+    ],
+    media: [
+      {
+        file: "Azure Query editor.jpeg",
+        alt: "Azure Stream Analytics SQL query editor",
+        fit: "contain",
+        caption: "Stream Analytics SQL query",
+        expandable: true,
+      },
+    ],
+  },
+  {
+    id: "azure-sql-live-output",
+    kicker: "Azure SQL Live Output",
+    title: "Azure SQL Live Telemetry Storage",
+    subtitle:
+      "Processed streaming data lands in Azure SQL as structured low-latency records for reporting and analysis.",
+    layout: "screenshotSplit",
+    accent: "blue",
+    bullets: [
+      "Stores processed live telemetry.",
+      "Persists alert-ready records.",
+      "Supports Power BI consumption.",
+      "Includes speed, RPM, throttle, tyre pressure, tyre temperature, fault status, and fault type.",
+    ],
+    media: [
+      {
+        file: "Azure Query.jpeg",
+        alt: "Azure SQL query output for live telemetry records",
+        fit: "contain",
+        caption: "Azure SQL live records",
+        expandable: true,
+      },
+    ],
+  },
+  {
+    id: "engineering-challenges",
+    kicker: "Engineering Challenges & Fixes",
+    title: "Production-like failure handling made the batch pipeline stable",
+    subtitle:
+      "Records were inserted into PostgreSQL, but Docker volume permissions prevented JSONL truncation, so Airflow repeatedly loaded the same Bronze records.",
+    layout: "challenge",
     accent: "amber",
-    flow: [
-      "Read JSONL",
-      "Bulk Insert",
-      "Commit",
-      "Truncate Stream File",
-      "Resume Simulation",
-    ],
+    flow: ["Read JSONL", "Bulk Insert", "Commit", "Truncate Stream File", "Resume Simulation"],
     bullets: [
-      "Prevents duplicate PostgreSQL inserts.",
-      "Stops unbounded stream-file growth.",
-      "Keeps the simulator and Airflow ingestion cycle aligned.",
+      "Duplicate ingestion and repeated Bronze loading.",
+      "Docker volume permission issue.",
+      "Simulator and Airflow synchronization.",
+      "Azure streaming debugging and validation.",
+      "Stable batch processing after truncation control.",
     ],
-    media: [{ file: "Docker.png", alt: "Docker environment screenshot", fit: "cover" }],
   },
   {
-    id: "milestones",
-    kicker: "Current Status & Milestones",
-    title: "Core engineering is complete, dashboard and portfolio polish are in progress",
-    layout: "milestones",
+    id: "project-structure",
+    kicker: "Project Structure",
+    title: "A portfolio-ready repository organized by pipeline responsibility",
+    subtitle:
+      "Each folder maps to a clear part of the Data Engineering system: orchestration, simulation, modeling, storage, cloud streaming, and documentation.",
+    layout: "structure",
+    accent: "green",
+    media: [
+      {
+        file: "Project Structure.png",
+        alt: "Project folder structure screenshot",
+        fit: "contain",
+        caption: "Project structure",
+        expandable: true,
+      },
+    ],
+  },
+  {
+    id: "results-outcomes",
+    kicker: "Results, Features & Learning Outcomes",
+    title: "A complete Data Engineering project across batch, streaming, warehousing, and quality",
+    subtitle:
+      "The final project demonstrates reliable ingestion, transformation, cloud streaming, storage, and analytics preparation.",
+    layout: "results",
     accent: "green",
   },
   {
-    id: "qa",
-    kicker: "Learning Outcomes / Q&A",
-    title: "Learning Outcomes",
-    subtitle: "Batch processing, streaming engineering, orchestration, transformation, warehousing, and cloud analytics in one portfolio project.",
+    id: "questions",
+    kicker: "Lacoste Team",
+    title: "Questions & Answers",
+    subtitle:
+      "One simulator. Two pipelines. Complete batch and real-time Data Engineering.",
     layout: "qa",
     accent: "cyan",
-    bullets: [
-      "Batch Processing",
-      "Streaming Data Engineering",
-      "Airflow Orchestration",
-      "dbt Transformations",
-      "PostgreSQL Warehousing",
-      "Azure IoT Hub",
-      "Azure Stream Analytics",
-      "Azure SQL Database",
-      "Dockerized Development",
-      "Data Quality & Monitoring",
-    ],
+    flow: ["Simulator", "Batch + Streaming", "Analytics-Ready Data", "Power BI"],
   },
 ];
 
-const milestones = [
-  { label: "Vehicle Telemetry Simulator", status: "Complete" },
-  { label: "Batch ETL Pipeline", status: "Complete" },
-  { label: "Real-Time Streaming Pipeline", status: "Complete" },
-  { label: "Power BI Dashboard", status: "In Progress" },
-  { label: "Documentation & Portfolio", status: "In Progress" },
-];
-
-const planned = [
-  "Final Power BI dashboards",
-  "Deployment documentation",
-  "Alert improvements",
-  "Affected tyre detection",
-  "Human-readable failure reasons",
-];
-
-const layerCards = [
-  {
-    label: "Bronze",
-    title: "Raw ingested telemetry",
-    copy: "Append-friendly records preserve source events for replay, auditing, and debugging.",
-  },
-  {
-    label: "Silver",
-    title: "Cleaned and validated telemetry",
-    copy: "Typed fields, normalized values, quality rules, and health-ready event shapes.",
-  },
-  {
-    label: "Gold",
-    title: "Analytics-ready outputs",
-    copy: "Facts, dimensions, aggregates, tyre insights, and Power BI-ready tables.",
-  },
-];
-
-function toneClass(tone: MediaItem["tone"] = "cyan") {
-  return {
-    cyan: "media-cyan",
-    green: "media-green",
-    blue: "media-blue",
-    amber: "media-amber",
-  }[tone];
-}
+const slideCount = slides.length;
 
 function mediaIsVideo(file: string) {
   return /\.(mp4|webm|mov|m4v)$/i.test(file);
 }
 
-function SmartMedia({ item, priority = false }: { item: MediaItem; priority?: boolean }) {
+function toneClass(tone: Accent = "cyan") {
+  return `media-${tone}`;
+}
+
+function SlideHeader({ slide, compact = false }: { slide: Slide; compact?: boolean }) {
+  return (
+    <header className={compact ? "slide-header compact" : "slide-header"}>
+      <p className="deck-kicker">{slide.kicker}</p>
+      <h1>{slide.title}</h1>
+      {slide.subtitle ? <p className="slide-subtitle">{slide.subtitle}</p> : null}
+    </header>
+  );
+}
+
+function ScreenshotPanel({
+  item,
+  priority = false,
+  onExpand,
+}: {
+  item: MediaItem;
+  priority?: boolean;
+  onExpand?: (item: MediaItem) => void;
+}) {
   const [missing, setMissing] = useState(false);
   const mediaClass = `smart-media ${toneClass(item.tone)} fit-${item.fit ?? "contain"}`;
   const src = pic(item.file);
+  const canExpand = item.expandable !== false && !mediaIsVideo(item.file);
 
-  if (missing) {
-    return (
-      <div className={`${mediaClass} media-fallback`} role="img" aria-label={`${item.alt} missing`}>
-        <span>Media unavailable</span>
-        <strong>{item.file}</strong>
-      </div>
-    );
-  }
-
-  if (mediaIsVideo(item.file)) {
-    return (
-      <video
-        className={mediaClass}
-        src={src}
-        aria-label={item.alt}
-        controls
-        autoPlay
-        muted
-        loop
-        playsInline
-        onError={() => setMissing(true)}
-      />
-    );
-  }
-
-  return (
+  const media = missing ? (
+    <div className={`${mediaClass} media-fallback`} role="img" aria-label={`${item.alt} missing`}>
+      <span>Media unavailable</span>
+      <strong>{item.file}</strong>
+    </div>
+  ) : mediaIsVideo(item.file) ? (
+    <video
+      className={mediaClass}
+      src={src}
+      aria-label={item.alt}
+      controls
+      autoPlay
+      muted
+      loop
+      playsInline
+      onError={() => setMissing(true)}
+    />
+  ) : (
     <img
       className={mediaClass}
       src={src}
@@ -379,13 +496,58 @@ function SmartMedia({ item, priority = false }: { item: MediaItem; priority?: bo
       onError={() => setMissing(true)}
     />
   );
+
+  return (
+    <figure className={canExpand ? "screenshot-panel expandable" : "screenshot-panel"}>
+      {canExpand ? (
+        <button
+          className="screenshot-trigger"
+          type="button"
+          aria-label={`Expand screenshot: ${item.alt}`}
+          onClick={() => onExpand?.(item)}
+        >
+          {media}
+        </button>
+      ) : (
+        media
+      )}
+      {item.caption ? <figcaption>{item.caption}</figcaption> : null}
+    </figure>
+  );
 }
 
-function FlowRail({ steps, compact = false }: { steps: string[]; compact?: boolean }) {
+function ScreenshotModal({
+  item,
+  onClose,
+}: {
+  item: MediaItem | null;
+  onClose: () => void;
+}) {
+  if (!item) return null;
+
   return (
-    <div className={compact ? "flow-rail compact" : "flow-rail"}>
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label={item.alt}>
+      <button className="lightbox-backdrop" type="button" aria-label="Close image preview" onClick={onClose} />
+      <div className="lightbox-content">
+        <button className="lightbox-close" type="button" onClick={onClose} aria-label="Close image preview">
+          Close
+        </button>
+        <img src={pic(item.file)} alt={item.alt} />
+        {item.caption ? <p>{item.caption}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function PipelineFlow({ steps, compact = false }: { steps: string[]; compact?: boolean }) {
+  return (
+    <div className={compact ? "pipeline-flow compact" : "pipeline-flow"}>
       {steps.map((step, index) => (
-        <div className="flow-node" key={`${step}-${index}`}>
+        <div
+          className="pipeline-node stagger-item"
+          key={`${step}-${index}`}
+          style={{ "--delay": `${index * 70}ms` } as CSSProperties}
+        >
           <span>{step}</span>
         </div>
       ))}
@@ -400,7 +562,7 @@ function BulletList({ items = [] }: { items?: string[] }) {
         <li
           key={item}
           className="stagger-item"
-          style={{ "--delay": `${index * 90}ms` } as CSSProperties}
+          style={{ "--delay": `${index * 85}ms` } as CSSProperties}
         >
           {item}
         </li>
@@ -409,18 +571,49 @@ function BulletList({ items = [] }: { items?: string[] }) {
   );
 }
 
-function HeroSlide({ slide }: { slide: Slide }) {
+function FeatureCard({
+  title,
+  detail,
+  index,
+}: {
+  title: string;
+  detail?: string;
+  index: number;
+}) {
   return (
-    <div className="hero-layout">
-      <section className="hero-copy">
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h1>{slide.title}</h1>
-        <p className="hero-subtitle">{slide.subtitle}</p>
-        <div className="tagline">End-to-end telemetry engineering for analytics-ready fleet intelligence.</div>
+    <article
+      className="feature-card stagger-item"
+      style={{ "--delay": `${index * 55}ms` } as CSSProperties}
+    >
+      <span>{String(index + 1).padStart(2, "0")}</span>
+      <strong>{title}</strong>
+      {detail ? <p>{detail}</p> : null}
+    </article>
+  );
+}
+
+function CodeBlock({ lines }: { lines: string[] }) {
+  return (
+    <pre className="code-block">
+      {lines.map((line) => (
+        <code key={line}>{line}</code>
+      ))}
+    </pre>
+  );
+}
+
+function CoverSlide({ slide, onExpand }: { slide: Slide; onExpand: (item: MediaItem) => void }) {
+  return (
+    <div className="cover-layout">
+      <section className="cover-copy">
+        <SlideHeader slide={slide} />
+        <div className="tagline">From simulated vehicle events to analytics-ready batch and live streaming data.</div>
         <BulletList items={slide.bullets} />
       </section>
-      <section className="hero-visual">
-        {slide.media?.[0] ? <SmartMedia item={slide.media[0]} priority /> : null}
+      <section className="cover-visual">
+        {slide.media?.[0] ? (
+          <ScreenshotPanel item={slide.media[0]} priority onExpand={onExpand} />
+        ) : null}
         <div className="signal-strip" aria-hidden="true">
           <span />
           <span />
@@ -433,126 +626,23 @@ function HeroSlide({ slide }: { slide: Slide }) {
 
 function OverviewSlide({ slide }: { slide: Slide }) {
   return (
-    <div className="split-layout">
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-        <p className="slide-subtitle">{slide.subtitle}</p>
+    <div className="overview-layout">
+      <SlideHeader slide={slide} />
+      <section className="flow-comparison">
+        <article>
+          <span>Batch</span>
+          <PipelineFlow steps={slide.flow ?? []} compact />
+        </article>
+        <article>
+          <span>Streaming</span>
+          <PipelineFlow steps={slide.secondaryFlow ?? []} compact />
+        </article>
+      </section>
+      <section className="overview-bottom">
         <BulletList items={slide.bullets} />
-      </section>
-      <section className="stat-grid">
-        {slide.stats?.map((stat, index) => (
-          <article
-            className="stat-card stagger-item"
-            key={stat.label}
-            style={{ "--delay": `${index * 110}ms` } as CSSProperties}
-          >
-            <strong>{stat.value}</strong>
-            <span>{stat.label}</span>
-            <small>{stat.detail}</small>
-          </article>
-        ))}
-      </section>
-    </div>
-  );
-}
-
-function ProblemSlide({ slide }: { slide: Slide }) {
-  return (
-    <div className="problem-layout">
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-        <p className="slide-subtitle">{slide.subtitle}</p>
-      </section>
-      <section className="problem-grid">
-        {slide.bullets?.map((item, index) => (
-          <article
-            className="problem-card stagger-item"
-            key={item}
-            style={{ "--delay": `${index * 100}ms` } as CSSProperties}
-          >
-            <span>0{index + 1}</span>
-            <p>{item}</p>
-          </article>
-        ))}
-      </section>
-    </div>
-  );
-}
-
-function ArchitectureSlide({ slide }: { slide: Slide }) {
-  return (
-    <div className="architecture-layout">
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-        <p className="slide-subtitle">{slide.subtitle}</p>
-      </section>
-      <div className="architecture-visual">
-        {slide.media?.[0] ? <SmartMedia item={slide.media[0]} priority /> : null}
-      </div>
-      <div className="dual-flow">
-        <div>
-          <span>Batch path</span>
-          <FlowRail steps={batchFlow.slice(0, 5)} compact />
-        </div>
-        <div>
-          <span>Streaming path</span>
-          <FlowRail steps={streamingFlow} compact />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TechSlide({ slide }: { slide: Slide }) {
-  return (
-    <div className="tech-layout">
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-      </section>
-      <section className="tech-grid">
-        {techStack.map((tech, index) => (
-          <article
-            className="tech-card stagger-item"
-            key={tech.name}
-            style={{ "--delay": `${index * 45}ms` } as CSSProperties}
-          >
-            {tech.media ? (
-              <img src={pic(tech.media)} alt="" onError={(event) => event.currentTarget.remove()} />
-            ) : (
-              <span>{tech.name.slice(0, 3).toUpperCase()}</span>
-            )}
-            <strong>{tech.name}</strong>
-            <small>{tech.type}</small>
-          </article>
-        ))}
-      </section>
-      <aside className="structure-shot">
-        {slide.media?.[0] ? <SmartMedia item={slide.media[0]} /> : null}
-      </aside>
-    </div>
-  );
-}
-
-function PipelineSlide({ slide }: { slide: Slide }) {
-  const isStreaming = slide.id === "streaming";
-
-  return (
-    <div className={isStreaming ? "pipeline-layout streaming" : "pipeline-layout"}>
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-        <p className="slide-subtitle">{slide.subtitle}</p>
-        {slide.flow ? <FlowRail steps={slide.flow} /> : null}
-      </section>
-      <section className="pipeline-support">
-        <BulletList items={slide.bullets} />
-        <div className="media-grid">
-          {slide.media?.map((item, index) => (
-            <SmartMedia key={item.file} item={item} priority={index === 0} />
+        <div className="tech-ribbon">
+          {techStack.map((tech) => (
+            <span key={tech}>{tech}</span>
           ))}
         </div>
       </section>
@@ -560,43 +650,67 @@ function PipelineSlide({ slide }: { slide: Slide }) {
   );
 }
 
-function TelemetrySlide({ slide }: { slide: Slide }) {
+function ArchitectureSlide({ slide, onExpand }: { slide: Slide; onExpand: (item: MediaItem) => void }) {
   return (
-    <div className="telemetry-layout">
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-        <p className="slide-subtitle">{slide.subtitle}</p>
+    <div className="architecture-layout">
+      <SlideHeader slide={slide} compact />
+      <section className="screenshot-hero">
+        {slide.media?.[0] ? (
+          <ScreenshotPanel item={slide.media[0]} priority onExpand={onExpand} />
+        ) : null}
       </section>
-      <section className="telemetry-grid">
-        {telemetryFields.map((field, index) => (
-          <article
-            className="metric-card stagger-item"
-            key={field}
-            style={{ "--delay": `${index * 24}ms` } as CSSProperties}
-          >
-            <span>{field}</span>
-          </article>
+    </div>
+  );
+}
+
+function BatchSlide({ slide }: { slide: Slide }) {
+  return (
+    <div className="batch-layout">
+      <SlideHeader slide={slide} />
+      <section className="batch-flow-panel">
+        <PipelineFlow steps={slide.flow ?? []} />
+      </section>
+      <section className="feature-grid five">
+        {slide.bullets?.map((item, index) => (
+          <FeatureCard key={item} title={item} index={index} />
         ))}
       </section>
     </div>
   );
 }
 
-function LayersSlide({ slide }: { slide: Slide }) {
+function ScreenshotSplitSlide({
+  slide,
+  onExpand,
+}: {
+  slide: Slide;
+  onExpand: (item: MediaItem) => void;
+}) {
   return (
-    <div className="layers-layout">
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-        <p className="slide-subtitle">{slide.subtitle}</p>
+    <div className="screenshot-split-layout">
+      <section className="split-media">
+        {slide.media?.[0] ? (
+          <ScreenshotPanel item={slide.media[0]} priority onExpand={onExpand} />
+        ) : null}
       </section>
-      <section className="layer-grid">
-        {layerCards.map((layer, index) => (
+      <section className="split-copy">
+        <SlideHeader slide={slide} compact />
+        <BulletList items={slide.bullets} />
+      </section>
+    </div>
+  );
+}
+
+function DbtSlide({ slide }: { slide: Slide }) {
+  return (
+    <div className="dbt-layout">
+      <SlideHeader slide={slide} />
+      <section className="layer-stack">
+        {dbtLayers.map((layer, index) => (
           <article
             className="layer-card stagger-item"
             key={layer.label}
-            style={{ "--delay": `${index * 120}ms` } as CSSProperties}
+            style={{ "--delay": `${index * 110}ms` } as CSSProperties}
           >
             <span>{layer.label}</span>
             <strong>{layer.title}</strong>
@@ -604,52 +718,159 @@ function LayersSlide({ slide }: { slide: Slide }) {
           </article>
         ))}
       </section>
-      <BulletList items={slide.bullets} />
+      <aside className="dbt-support">
+        {slide.media?.[0] ? <img src={pic(slide.media[0].file)} alt={slide.media[0].alt} /> : null}
+        <BulletList items={slide.bullets} />
+      </aside>
     </div>
   );
 }
 
-function FixSlide({ slide }: { slide: Slide }) {
+function StreamingSlide({ slide }: { slide: Slide }) {
   return (
-    <div className="fix-layout">
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-        <p className="slide-subtitle">{slide.subtitle}</p>
-        {slide.flow ? <FlowRail steps={slide.flow} compact /> : null}
+    <div className="streaming-layout">
+      <SlideHeader slide={slide} />
+      <section className="streaming-flow-panel">
+        <PipelineFlow steps={slide.flow ?? []} />
+      </section>
+      <section className="feature-grid four">
+        {slide.bullets?.map((item, index) => (
+          <FeatureCard key={item} title={item} index={index} />
+        ))}
+      </section>
+    </div>
+  );
+}
+
+function SqlQuerySlide({
+  slide,
+  onExpand,
+}: {
+  slide: Slide;
+  onExpand: (item: MediaItem) => void;
+}) {
+  return (
+    <div className="sql-layout">
+      <section className="sql-media">
+        {slide.media?.[0] ? (
+          <ScreenshotPanel item={slide.media[0]} priority onExpand={onExpand} />
+        ) : null}
+      </section>
+      <section className="sql-copy">
+        <SlideHeader slide={slide} compact />
+        <CodeBlock
+          lines={[
+            "SELECT vehicle_id, event_time,",
+            "       fault_status, fault_type,",
+            "       severity, tyre_health",
+            "INTO azure_sql_alerts",
+          ]}
+        />
         <BulletList items={slide.bullets} />
       </section>
-      <section className="fix-media">
-        {slide.media?.[0] ? <SmartMedia item={slide.media[0]} priority /> : null}
+    </div>
+  );
+}
+
+function ChallengeSlide({ slide }: { slide: Slide }) {
+  return (
+    <div className="challenge-layout">
+      <SlideHeader slide={slide} compact />
+      <section className="challenge-grid">
+        <article className="challenge-card problem">
+          <span>Problem</span>
+          <strong>Repeated Bronze loading</strong>
+          <p>
+            PostgreSQL inserts succeeded, but the JSONL stream file stayed in place because Docker volume
+            write permissions blocked truncation.
+          </p>
+        </article>
+        <article className="challenge-card solution">
+          <span>Solution</span>
+          <strong>Commit before truncation</strong>
+          <p>
+            Airflow now truncates the stream file only after the bulk insert is committed, then the simulator
+            can safely resume.
+          </p>
+        </article>
+      </section>
+      <section className="challenge-flow">
+        <PipelineFlow steps={slide.flow ?? []} compact />
+      </section>
+      <section className="feature-grid five compact-cards">
+        {slide.bullets?.map((item, index) => (
+          <FeatureCard key={item} title={item} index={index} />
+        ))}
       </section>
     </div>
   );
 }
 
-function MilestonesSlide({ slide }: { slide: Slide }) {
+function StructureSlide({
+  slide,
+  onExpand,
+}: {
+  slide: Slide;
+  onExpand: (item: MediaItem) => void;
+}) {
   return (
-    <div className="milestone-layout">
-      <section>
-        <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
+    <div className="structure-layout">
+      <section className="structure-media">
+        {slide.media?.[0] ? (
+          <ScreenshotPanel item={slide.media[0]} priority onExpand={onExpand} />
+        ) : null}
       </section>
-      <section className="milestone-list">
-        {milestones.map((milestone, index) => (
-          <article
-            className={milestone.status === "Complete" ? "milestone done" : "milestone active"}
-            key={milestone.label}
-            style={{ "--delay": `${index * 90}ms` } as CSSProperties}
-          >
-            <span>{index + 1}</span>
-            <strong>{milestone.label}</strong>
-            <small>{milestone.status}</small>
-          </article>
-        ))}
+      <section className="structure-copy">
+        <SlideHeader slide={slide} compact />
+        <CodeBlock
+          lines={[
+            "project/",
+            "|-- airflow/",
+            "|-- simulator/",
+            "|-- dbt_project/",
+            "|-- postgres/",
+            "|-- azure/",
+            "|   |-- stream_analytics_query.sql",
+            "|   `-- alerts_query.sql",
+            "|-- docker-compose.yml",
+            "`-- README.md",
+          ]}
+        />
+        <div className="folder-grid">
+          {folderLabels.map((folder, index) => (
+            <FeatureCard key={folder.name} title={folder.name} detail={folder.detail} index={index} />
+          ))}
+        </div>
       </section>
-      <section className="planned-list">
-        {planned.map((item) => (
-          <span key={item}>{item}</span>
-        ))}
+    </div>
+  );
+}
+
+function ResultsSlide({ slide }: { slide: Slide }) {
+  return (
+    <div className="results-layout">
+      <SlideHeader slide={slide} compact />
+      <section className="results-columns">
+        <div>
+          <h2>Project Results</h2>
+          <div className="badge-grid results">
+            {resultItems.map((item, index) => (
+              <span className="status-badge stagger-item" key={item} style={{ "--delay": `${index * 35}ms` } as CSSProperties}>
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h2>Learning Outcomes</h2>
+          <div className="badge-grid outcomes">
+            {outcomeItems.map((item, index) => (
+              <span className="status-badge subtle stagger-item" key={item} style={{ "--delay": `${index * 28}ms` } as CSSProperties}>
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
       </section>
     </div>
   );
@@ -658,55 +879,63 @@ function MilestonesSlide({ slide }: { slide: Slide }) {
 function QASlide({ slide }: { slide: Slide }) {
   return (
     <div className="qa-layout">
-      <section>
+      <section className="qa-copy">
         <p className="deck-kicker">{slide.kicker}</p>
-        <h2>{slide.title}</h2>
-        <p className="slide-subtitle">{slide.subtitle}</p>
+        <h1>{slide.title}</h1>
+        <p className="hero-subtitle">{slide.subtitle}</p>
       </section>
-      <section className="outcome-grid">
-        {slide.bullets?.map((item, index) => (
-          <article
-            className="outcome-card stagger-item"
-            key={item}
-            style={{ "--delay": `${index * 55}ms` } as CSSProperties}
-          >
-            {item}
-          </article>
-        ))}
+      <section className="qa-flow">
+        {slide.flow ? <PipelineFlow steps={slide.flow} compact /> : null}
       </section>
       <footer className="qa-footer">
-        <strong>Q&amp;A</strong>
-        <span>Author: Lacoste Team</span>
+        <strong>Car Telemetry Data Engineering Pipeline</strong>
+        <span>Lacoste Team</span>
       </footer>
     </div>
   );
 }
 
-function SlideContent({ slide }: { slide: Slide }) {
-  if (slide.layout === "hero") return <HeroSlide slide={slide} />;
+function SlideContent({
+  slide,
+  onExpand,
+}: {
+  slide: Slide;
+  onExpand: (item: MediaItem) => void;
+}) {
+  if (slide.layout === "cover") return <CoverSlide slide={slide} onExpand={onExpand} />;
   if (slide.layout === "overview") return <OverviewSlide slide={slide} />;
-  if (slide.layout === "problem") return <ProblemSlide slide={slide} />;
-  if (slide.layout === "architecture") return <ArchitectureSlide slide={slide} />;
-  if (slide.layout === "tech") return <TechSlide slide={slide} />;
-  if (slide.layout === "pipeline") return <PipelineSlide slide={slide} />;
-  if (slide.layout === "telemetry") return <TelemetrySlide slide={slide} />;
-  if (slide.layout === "layers") return <LayersSlide slide={slide} />;
-  if (slide.layout === "fix") return <FixSlide slide={slide} />;
-  if (slide.layout === "milestones") return <MilestonesSlide slide={slide} />;
+  if (slide.layout === "architecture") return <ArchitectureSlide slide={slide} onExpand={onExpand} />;
+  if (slide.layout === "batch") return <BatchSlide slide={slide} />;
+  if (slide.layout === "screenshotSplit") return <ScreenshotSplitSlide slide={slide} onExpand={onExpand} />;
+  if (slide.layout === "dbt") return <DbtSlide slide={slide} />;
+  if (slide.layout === "streaming") return <StreamingSlide slide={slide} />;
+  if (slide.layout === "sqlQuery") return <SqlQuerySlide slide={slide} onExpand={onExpand} />;
+  if (slide.layout === "challenge") return <ChallengeSlide slide={slide} />;
+  if (slide.layout === "structure") return <StructureSlide slide={slide} onExpand={onExpand} />;
+  if (slide.layout === "results") return <ResultsSlide slide={slide} />;
   return <QASlide slide={slide} />;
 }
 
 export function TelemetryDeck() {
   const [index, setIndex] = useState(0);
+  const [expandedMedia, setExpandedMedia] = useState<MediaItem | null>(null);
   const currentSlide = slides[index];
-  const progress = useMemo(() => ((index + 1) / slides.length) * 100, [index]);
+  const progress = useMemo(() => ((index + 1) / slideCount) * 100, [index]);
 
   const goTo = (nextIndex: number) => {
-    setIndex(Math.min(Math.max(nextIndex, 0), slides.length - 1));
+    setIndex(Math.min(Math.max(nextIndex, 0), slideCount - 1));
   };
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (expandedMedia) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          setExpandedMedia(null);
+        }
+        return;
+      }
+
       if (event.key === "ArrowRight" || event.key === " ") {
         event.preventDefault();
         goTo(index + 1);
@@ -721,13 +950,20 @@ export function TelemetryDeck() {
       }
       if (event.key === "End") {
         event.preventDefault();
-        goTo(slides.length - 1);
+        goTo(slideCount - 1);
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [index]);
+  }, [expandedMedia, index]);
+
+  useEffect(() => {
+    document.body.style.overflow = expandedMedia ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [expandedMedia]);
 
   return (
     <main className="deck-shell">
@@ -737,11 +973,11 @@ export function TelemetryDeck() {
       </div>
 
       <section
-        className={`slide-stage accent-${currentSlide.accent ?? "cyan"}`}
+        className={`slide-stage accent-${currentSlide.accent}`}
         key={currentSlide.id}
         aria-live="polite"
       >
-        <SlideContent slide={currentSlide} />
+        <SlideContent slide={currentSlide} onExpand={setExpandedMedia} />
       </section>
 
       <nav className="deck-controls" aria-label="Slide navigation">
@@ -753,14 +989,14 @@ export function TelemetryDeck() {
         >
           Prev
         </button>
-        <div className="slide-count" aria-label={`Slide ${index + 1} of ${slides.length}`}>
+        <div className="slide-count" aria-label={`Slide ${index + 1} of ${slideCount}`}>
           <strong>{String(index + 1).padStart(2, "0")}</strong>
-          <span>/ {String(slides.length).padStart(2, "0")}</span>
+          <span>/ {String(slideCount).padStart(2, "0")}</span>
         </div>
         <button
           type="button"
           onClick={() => goTo(index + 1)}
-          disabled={index === slides.length - 1}
+          disabled={index === slideCount - 1}
           aria-label="Next slide"
         >
           Next
@@ -778,6 +1014,8 @@ export function TelemetryDeck() {
           />
         ))}
       </div>
+
+      <ScreenshotModal item={expandedMedia} onClose={() => setExpandedMedia(null)} />
     </main>
   );
 }

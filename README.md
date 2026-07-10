@@ -6,12 +6,13 @@ combines a scheduled batch pipeline with a real-time Azure streaming pipeline.
 
 ## What is included
 
-- 12-slide responsive portfolio presentation
+- 16-slide responsive conference-style presentation
 - Keyboard navigation with ArrowRight, Space, ArrowLeft, Home, and End
 - Clickable previous and next controls
 - Progress bar, slide numbers, and slide jump dots
 - Reusable slide data in `app/TelemetryDeck.tsx`
 - Media support for images and videos from `public/pic`
+- Click-to-expand screenshot lightbox with Escape-to-close support
 - Missing-media fallback UI
 - Open Graph preview image at `public/og.png`
 
